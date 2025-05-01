@@ -442,8 +442,17 @@ def test_rhalphabet(tmpdir,
     tf_dataResidual = rl.BasisPoly('CMS_EXO24027_tf_dataResidual_2018', (2, 2), ['pt', 'rho'] ,basis='Bernstein', limits=(-100, 100))
     tf_dataResidual_params = tf_dataResidual(ptscaled, rhoscaled)
 
+    # 2018 specific corrections
+    msdscaled = (msdpts) / (200.0)
+    MCcorr_initial_vals = np.array([3.753,-124.766,1746.03,-7540.25])
+    MCcorr_order = (3,)
+    MCcorr = rl.BasisPoly('CMS_EXO24027_MCcorr', MCcorr_order, ['msd'], basis='Polynomial', init_params=MCcorr_initial_vals)
+    MCcorr_params = MCcorr(msdscaled)
+#    print("MCcorr: "+str(MCcorr))
+#    print("MCcorr_params: "+str(MCcorr_params))
 
-    tf_params = GJeff * tf_MCtempl_params_final * tf_dataResidual_params
+    #tf_params = GJeff * tf_MCtempl_params_final * tf_dataResidual_params
+    tf_params = GJeff * tf_MCtempl_params_final * tf_dataResidual_params * MCcorr_params
 
     # build actual fit model now
     model = rl.Model('testModel_2018')
@@ -552,40 +561,40 @@ def test_rhalphabet(tmpdir,
                 ch.addSample(sample)
 
             data_obs = get_template2('Data', isPass, ptbin+2, obs=msd, syst='nominal')
-            if not isPass:
-                data_obs = list(data_obs)
-                # Additional 2018 correction
-	        print("initial data_obs[0]: "+str(data_obs[0]))
-                corr = np.ones(len(data_obs[0]))
-                if ptbin == 0:
-                    def func(x): 
-		        return 2.72644*(sin(4.64083*sqrt(x))/x) + 1.07661
-                    corr[:5] = np.array([func(x) for x in msdpts[0][:5]])
-                    print("Correction: "+str(corr))
-                    data_obs[0] = data_obs[0] * corr
-                    print("New data_obs[0]: "+str(data_obs[0]))
-                if ptbin == 1:
-                    def func(x): 
-        		return 3.69674*(sin(4.55741*sqrt(x))/x) + .907415
-                    corr[:5] = np.array([func(x) for x in msdpts[0][:5]])
-                    print("Correction: "+str(corr))
-                    data_obs[0] = data_obs[0] * corr
-                    print("New data_obs[0]: "+str(data_obs[0]))
-                if ptbin == 2:
-                    def func(x): 
-        		return 1.80367*(sin(5.25403*sqrt(x))/x) + 1.0462
-                    corr[:5] = np.array([func(x) for x in msdpts[0][:5]])
-                    print("Correction: "+str(corr))
-                    data_obs[0] = data_obs[0] * corr
-                    print("New data_obs[0]: "+str(data_obs[0]))
-                if ptbin == 3:
-                    def func(x): 
-        		return -.24614*(sin(4.08548*sqrt(x))/x) + .99315
-                    corr[:5] = np.array([func(x) for x in msdpts[0][:5]])
-                    print("Correction: "+str(corr))
-                    data_obs[0] = data_obs[0] * corr
-                    print("New data_obs[0]: "+str(data_obs[0]))
-                data_obs = tuple(data_obs)
+#            if not isPass:
+#                data_obs = list(data_obs)
+#                # Additional 2018 correction
+#	        print("initial data_obs[0]: "+str(data_obs[0]))
+ #               corr = np.ones(len(data_obs[0]))
+  #              if ptbin == 0:
+   #                 def func(x): 
+#		        return 2.72644*(sin(4.64083*sqrt(x))/x) + 1.07661
+ #                   corr[:5] = np.array([func(x) for x in msdpts[0][:5]])
+  #                  print("Correction: "+str(corr))
+   #                 data_obs[0] = data_obs[0] * corr
+    #                print("New data_obs[0]: "+str(data_obs[0]))
+     #           if ptbin == 1:
+      #              def func(x): 
+       # 		return 3.69674*(sin(4.55741*sqrt(x))/x) + .907415
+        #            corr[:5] = np.array([func(x) for x in msdpts[0][:5]])
+         #           print("Correction: "+str(corr))
+          #          data_obs[0] = data_obs[0] * corr
+           #         print("New data_obs[0]: "+str(data_obs[0]))
+            #    if ptbin == 2:
+             #       def func(x): 
+        #		return 1.80367*(sin(5.25403*sqrt(x))/x) + 1.0462
+         #           corr[:5] = np.array([func(x) for x in msdpts[0][:5]])
+          #          print("Correction: "+str(corr))
+           #         data_obs[0] = data_obs[0] * corr
+            #        print("New data_obs[0]: "+str(data_obs[0]))
+             #   if ptbin == 3:
+              #      def func(x): 
+        #		return -.24614*(sin(4.08548*sqrt(x))/x) + .99315
+         #           corr[:5] = np.array([func(x) for x in msdpts[0][:5]])
+          #          print("Correction: "+str(corr))
+           #         data_obs[0] = data_obs[0] * corr
+            #        print("New data_obs[0]: "+str(data_obs[0]))
+             #   data_obs = tuple(data_obs)
 
             ch.setObservation(data_obs, read_sumw2=True)
     
